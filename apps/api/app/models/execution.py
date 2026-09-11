@@ -52,6 +52,7 @@ class Order(Base):
 
     quality_grade: Mapped[str | None] = mapped_column(String(1), nullable=True)
     classification: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    entry_gold_macro_score: Mapped[int | None] = mapped_column(nullable=True)
     rejection_reasons: Mapped[str | None] = mapped_column(Text, nullable=True)  # comma-separated
 
     created_at: Mapped[datetime] = mapped_column(

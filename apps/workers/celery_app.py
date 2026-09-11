@@ -16,7 +16,12 @@ celery_app = Celery(
     "go_os",
     broker=REDIS_URL,
     backend=REDIS_URL,
-    include=["tasks.example_task", "tasks.economic_ingestion", "tasks.market_ingestion"],
+    include=[
+        "tasks.example_task",
+        "tasks.economic_ingestion",
+        "tasks.market_ingestion",
+        "tasks.position_monitoring",
+    ],
 )
 
 celery_app.conf.update(
@@ -37,6 +42,13 @@ celery_app.conf.update(
             # Daily bars only need a daily pull. Twelve Data's free tier has
             # a real request quota — this schedule respects that on purpose.
             "schedule": 24 * 60 * 60.0,
+        },
+        "monitor-positions-every-4-hours": {
+            "task": "tasks.monitor_all_positions",
+            # More frequent than the daily data pulls: a position with a
+            # trailing stop or a hard stop shouldn't wait a full day to be
+            # checked, even though the underlying bars are still daily.
+            "schedule": 4 * 60 * 60.0,
         },
     },
 )

@@ -33,6 +33,7 @@ class RiskConfigResponse(BaseModel):
     max_portfolio_heat_pct: float
     max_open_positions: int
     max_single_asset_exposure_pct: float
+    max_daily_loss_pct: float
     min_quality_grade: QualityGrade
 
 
@@ -42,6 +43,7 @@ class RiskConfigUpdate(BaseModel):
     max_portfolio_heat_pct: float | None = Field(default=None, gt=0, le=100)
     max_open_positions: int | None = Field(default=None, gt=0)
     max_single_asset_exposure_pct: float | None = Field(default=None, gt=0, le=100)
+    max_daily_loss_pct: float | None = Field(default=None, gt=0, le=100)
     min_quality_grade: QualityGrade | None = None
 
 
@@ -52,6 +54,7 @@ def _config_to_response(config: RiskConfigModel) -> RiskConfigResponse:
         max_portfolio_heat_pct=float(config.max_portfolio_heat_pct),
         max_open_positions=config.max_open_positions,
         max_single_asset_exposure_pct=float(config.max_single_asset_exposure_pct),
+        max_daily_loss_pct=float(config.max_daily_loss_pct),
         min_quality_grade=QualityGrade(config.min_quality_grade),
     )
 
@@ -112,6 +115,7 @@ class TradeEvaluationResponse(BaseModel):
     stop_price: float | None
     quality: QualityGrade | None
     classification: str | None
+    gold_macro_score: int
     kill_switch_state: KillSwitchStateName
     approved: bool
     reasons: list[RejectionReason]
@@ -124,8 +128,6 @@ def evaluate_trade(
     symbol: str,
     interval: str = "1day",
     proposed_risk_pct: float | None = None,
-    open_positions_count: int = 0,
-    open_portfolio_heat_pct: float = 0.0,
     db: Session = Depends(get_db),
 ) -> TradeEvaluationResponse:
     try:
@@ -134,8 +136,6 @@ def evaluate_trade(
             symbol,
             interval,
             proposed_risk_pct=proposed_risk_pct,
-            open_positions_count=open_positions_count,
-            open_portfolio_heat_pct=open_portfolio_heat_pct,
         )
     except (UnsupportedSymbolError, SeriesNotIngestedError, NoMarketDataError, ValueError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -147,6 +147,7 @@ def evaluate_trade(
         stop_price=evaluation.stop_price,
         quality=evaluation.quality,
         classification=evaluation.classification,
+        gold_macro_score=evaluation.gold_macro_score,
         kill_switch_state=evaluation.kill_switch_state,
         approved=evaluation.decision.approved,
         reasons=evaluation.decision.reasons,

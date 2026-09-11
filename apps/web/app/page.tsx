@@ -3,6 +3,7 @@ import {
   getHealth,
   getMacroRegime,
   getMarketState,
+  getOpenPositions,
   getOpportunity,
   getOrders,
   getReady,
@@ -11,6 +12,7 @@ import { MacroRegimeCard, MacroRegimeEmptyState } from "./MacroRegimeCard";
 import { MarketStateCard, MarketStateEmptyState } from "./MarketStateCard";
 import { OpportunityCard, OpportunityEmptyState } from "./OpportunityCard";
 import { OrdersCard } from "./OrdersCard";
+import { PositionsCard } from "./PositionsCard";
 import { RiskCard, RiskCardEmptyState } from "./RiskCard";
 import styles from "./page.module.css";
 
@@ -68,6 +70,13 @@ export default async function Home() {
     orders = await getOrders(PRIMARY_SYMBOL);
   } catch {
     orders = [];
+  }
+
+  let openPositions: Awaited<ReturnType<typeof getOpenPositions>> = [];
+  try {
+    openPositions = await getOpenPositions(PRIMARY_SYMBOL);
+  } catch {
+    openPositions = [];
   }
 
   return (
@@ -130,10 +139,7 @@ export default async function Home() {
 
         <OrdersCard orders={orders} />
 
-        <div className={styles.placeholderCard}>
-          <h3>Open Positions</h3>
-          <p className={styles.muted}>Coming in a later build stage.</p>
-        </div>
+        <PositionsCard positions={openPositions} />
       </section>
     </main>
   );

@@ -22,6 +22,7 @@ class RejectionReason(StrEnum):
     QUALITY_BELOW_MINIMUM = "QUALITY_BELOW_MINIMUM"
     MAX_OPEN_POSITIONS_REACHED = "MAX_OPEN_POSITIONS_REACHED"
     MAX_PORTFOLIO_HEAT_EXCEEDED = "MAX_PORTFOLIO_HEAT_EXCEEDED"
+    MAX_DAILY_LOSS_REACHED = "MAX_DAILY_LOSS_REACHED"
     INVALID_STOP_DISTANCE = "INVALID_STOP_DISTANCE"
 
 
@@ -32,6 +33,7 @@ class RiskConfigInput:
     max_portfolio_heat_pct: float
     max_open_positions: int
     max_single_asset_exposure_pct: float
+    max_daily_loss_pct: float
     min_quality_grade: QualityGrade
 
 
@@ -79,12 +81,13 @@ def evaluate_trade(
     stop_price: float,
     open_positions_count: int,
     open_portfolio_heat_pct: float,
+    today_realized_pnl: float = 0.0,
 ) -> RiskDecision:
     """
     The single entry point every proposed trade must pass through. Order of
     checks follows the master plan's risk hierarchy (section 9.3): account
-    safety (kill switch) first, then hard structural limits, with position
-    sizing/exposure as the last, adjustable step.
+    safety (kill switch, daily loss) first, then hard structural limits,
+    with position sizing/exposure as the last, adjustable step.
     """
     reasons: list[RejectionReason] = []
     notes: list[str] = []
@@ -98,6 +101,18 @@ def evaluate_trade(
         )
     if kill_switch_state is KillSwitchStateName.ALERT:
         notes.append("Kill switch is ALERT — proceeding, but under heightened caution.")
+
+    if today_realized_pnl < 0 and config.account_balance > 0:
+        daily_loss_pct = abs(today_realized_pnl) / config.account_balance * 100
+        if daily_loss_pct >= config.max_daily_loss_pct:
+            return RiskDecision(
+                approved=False,
+                reasons=[RejectionReason.MAX_DAILY_LOSS_REACHED],
+                notes=[
+                    f"Today's realized loss ({daily_loss_pct:.2f}%) has reached the "
+                    f"{config.max_daily_loss_pct:.2f}% daily loss limit — no new risk today."
+                ],
+            )
 
     # 2. Setup quality floor — a hard structural limit, not adjustable.
     if _QUALITY_RANK[quality] < _QUALITY_RANK[config.min_quality_grade]:

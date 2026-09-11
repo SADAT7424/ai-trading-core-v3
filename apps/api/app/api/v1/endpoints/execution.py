@@ -67,8 +67,6 @@ def submit_order(
     symbol: str,
     interval: str = "1day",
     proposed_risk_pct: float | None = None,
-    open_positions_count: int = 0,
-    open_portfolio_heat_pct: float = 0.0,
     db: Session = Depends(get_db),
 ) -> OrderResponse:
     try:
@@ -77,8 +75,6 @@ def submit_order(
             symbol,
             interval,
             proposed_risk_pct=proposed_risk_pct,
-            open_positions_count=open_positions_count,
-            open_portfolio_heat_pct=open_portfolio_heat_pct,
         )
     except (
         UnsupportedSymbolError,

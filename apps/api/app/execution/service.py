@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app.execution.paper_broker import PaperBrokerAdapter
 from app.models.execution import Order, OrderStatus
+from app.positions.service import open_position_from_order
 from app.risk.service import evaluate_trade_for_symbol
 from app.trading_core.calculations import Direction
 
@@ -17,8 +18,6 @@ def submit_paper_order(
     symbol: str,
     interval: str = "1day",
     proposed_risk_pct: float | None = None,
-    open_positions_count: int = 0,
-    open_portfolio_heat_pct: float = 0.0,
 ) -> Order:
     """
     Runs the full pipeline (opportunity -> risk) and, if approved, places a
@@ -30,8 +29,6 @@ def submit_paper_order(
         symbol,
         interval,
         proposed_risk_pct=proposed_risk_pct,
-        open_positions_count=open_positions_count,
-        open_portfolio_heat_pct=open_portfolio_heat_pct,
     )
 
     if evaluation.direction is Direction.NONE or not evaluation.decision.approved:
@@ -46,6 +43,7 @@ def submit_paper_order(
             risk_pct=0.0,
             quality_grade=evaluation.quality.value if evaluation.quality else None,
             classification=evaluation.classification,
+            entry_gold_macro_score=evaluation.gold_macro_score,
             rejection_reasons=",".join(r.value for r in evaluation.decision.reasons) or "NO_SETUP",
         )
         db.add(order)
@@ -75,9 +73,15 @@ def submit_paper_order(
         risk_pct=evaluation.decision.position.risk_pct,
         quality_grade=evaluation.quality.value if evaluation.quality else None,
         classification=evaluation.classification,
+        entry_gold_macro_score=evaluation.gold_macro_score,
         filled_at=fill.filled_at,
     )
     db.add(order)
     db.commit()
     db.refresh(order)
+
+    # Stage 8: a filled order immediately becomes a tracked, monitorable
+    # position — see app/positions/service.py.
+    open_position_from_order(db, order)
+
     return order

@@ -182,3 +182,44 @@ export function getOrders(symbol?: string, limit = 10): Promise<OrderResponse[]>
   if (symbol) params.set("symbol", symbol);
   return getJson<OrderResponse[]>(`/api/v1/execution/orders?${params.toString()}`);
 }
+
+export interface PositionResponse {
+  id: string;
+  symbol: string;
+  direction: string;
+  status: "OPEN" | "CLOSED";
+  entry_price: number;
+  initial_stop_price: number;
+  current_stop_price: number;
+  target_price: number;
+  units: number;
+  entry_classification: string | null;
+  entry_quality_grade: string | null;
+  entry_gold_macro_score: number | null;
+  entry_thesis: string;
+  close_price: number | null;
+  close_reason: string | null;
+  realized_pnl: number | null;
+  opened_at: string;
+  closed_at: string | null;
+}
+
+export interface MonitorResponse {
+  position: PositionResponse;
+  current_price: number;
+  thesis_health_score: number;
+  thesis_health_status: "STRONG" | "HEALTHY" | "WEAKENING" | "CRITICAL" | "INVALIDATED";
+  thesis_reasons: string[];
+  exit_action: "HOLD" | "EXIT";
+  exit_reason: "NONE" | "STOP_LOSS" | "TAKE_PROFIT" | "THESIS_INVALIDATED";
+  notes: string[];
+}
+
+export function getOpenPositions(symbol?: string): Promise<PositionResponse[]> {
+  const params = symbol ? `?symbol=${symbol}` : "";
+  return getJson<PositionResponse[]>(`/api/v1/positions${params}`);
+}
+
+export function monitorPosition(positionId: string): Promise<MonitorResponse> {
+  return postJson<MonitorResponse>(`/api/v1/positions/${positionId}/monitor`);
+}

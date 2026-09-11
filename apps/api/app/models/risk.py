@@ -30,10 +30,12 @@ class RiskConfig(Base):
     recently created row (see repository.py's get_or_create pattern, same
     approach as DataSource in Stage 2).
 
-    Deliberately does NOT include max_daily_loss_pct or max_drawdown_pct
-    yet: enforcing those honestly requires real trade P&L history, which
-    doesn't exist until Stage 8/9. Storing a setting that nothing checks
-    would be misleading — better to add it when it can actually be enforced.
+    Deliberately does NOT include max_drawdown_pct yet: enforcing that
+    honestly requires a running peak-equity calculation across the whole
+    account history, which needs more infrastructure than a single day's
+    P&L check. max_daily_loss_pct WAS added once Stage 8 started producing
+    real realized P&L to check it against — see
+    app/positions/repository.py:get_today_realized_pnl.
     """
 
     __tablename__ = "risk_configs"
@@ -49,6 +51,9 @@ class RiskConfig(Base):
     )
     max_portfolio_heat_pct: Mapped[float] = mapped_column(
         Numeric(6, 3), nullable=False, default=5.0
+    )
+    max_daily_loss_pct: Mapped[float] = mapped_column(
+        Numeric(6, 3), nullable=False, default=3.0
     )
     max_open_positions: Mapped[int] = mapped_column(nullable=False, default=5)
     max_single_asset_exposure_pct: Mapped[float] = mapped_column(

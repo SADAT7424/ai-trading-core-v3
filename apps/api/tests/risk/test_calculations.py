@@ -22,6 +22,7 @@ _DEFAULT_CONFIG = RiskConfigInput(
     # the same assertion. The dedicated exposure-cap test below uses its own
     # deliberately tight config instead.
     max_single_asset_exposure_pct=80.0,
+    max_daily_loss_pct=3.0,
     min_quality_grade=QualityGrade.C,
 )
 
@@ -156,6 +157,7 @@ def test_evaluate_trade_reduces_size_to_respect_exposure_cap() -> None:
         max_portfolio_heat_pct=20.0,
         max_open_positions=5,
         max_single_asset_exposure_pct=10.0,  # ...but a tight exposure cap
+        max_daily_loss_pct=3.0,
         min_quality_grade=QualityGrade.C,
     )
     decision = evaluate_trade(
@@ -202,3 +204,52 @@ def test_evaluate_trade_rejects_invalid_stop_distance() -> None:
     )
     assert decision.approved is False
     assert RejectionReason.INVALID_STOP_DISTANCE in decision.reasons
+
+
+def test_evaluate_trade_blocks_when_daily_loss_limit_reached() -> None:
+    """max_daily_loss_pct = 3.0; a $350 loss on $10k is 3.5% — over the limit."""
+    decision = evaluate_trade(
+        config=_DEFAULT_CONFIG,
+        kill_switch_state=KillSwitchStateName.NORMAL,
+        quality=QualityGrade.A,
+        proposed_risk_pct=1.0,
+        entry_price=3600,
+        stop_price=3550,
+        open_positions_count=0,
+        open_portfolio_heat_pct=0.0,
+        today_realized_pnl=-350.0,
+    )
+    assert decision.approved is False
+    assert RejectionReason.MAX_DAILY_LOSS_REACHED in decision.reasons
+
+
+def test_evaluate_trade_allows_when_daily_loss_under_limit() -> None:
+    """A $100 loss on $10k is 1% — comfortably under the 3% limit."""
+    decision = evaluate_trade(
+        config=_DEFAULT_CONFIG,
+        kill_switch_state=KillSwitchStateName.NORMAL,
+        quality=QualityGrade.B,
+        proposed_risk_pct=1.0,
+        entry_price=3600,
+        stop_price=3550,
+        open_positions_count=0,
+        open_portfolio_heat_pct=0.0,
+        today_realized_pnl=-100.0,
+    )
+    assert decision.approved is True
+
+
+def test_evaluate_trade_daily_gain_never_blocks() -> None:
+    """A positive today_realized_pnl must never trigger the loss check."""
+    decision = evaluate_trade(
+        config=_DEFAULT_CONFIG,
+        kill_switch_state=KillSwitchStateName.NORMAL,
+        quality=QualityGrade.B,
+        proposed_risk_pct=1.0,
+        entry_price=3600,
+        stop_price=3550,
+        open_positions_count=0,
+        open_portfolio_heat_pct=0.0,
+        today_realized_pnl=500.0,
+    )
+    assert decision.approved is True

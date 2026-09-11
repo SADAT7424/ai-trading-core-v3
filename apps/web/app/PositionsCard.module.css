@@ -1,0 +1,112 @@
+.card {
+  background: var(--panel-solid);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.count {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.16);
+  color: #7db4ff;
+}
+
+.positionList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.positionRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.positionRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.mainRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.direction {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--positive);
+}
+
+.entryPrice {
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.gradeBadge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.levelsRow {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.78rem;
+}
+
+.stopLevel {
+  color: var(--negative);
+}
+
+.targetLevel {
+  color: var(--positive);
+}
+
+.thesis {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.openedAt {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.emptyState {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
