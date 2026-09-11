@@ -25,6 +25,10 @@ class FredProviderError(RuntimeError):
     """Raised when FRED returns an error or an unexpected response shape."""
 
 
+class FredProviderTooManyVintagesError(FredProviderError):
+    """Raised internally when a full-history request exceeds FRED's vintage-date limit."""
+
+
 class FredProvider(EconomicDataProvider):
     def __init__(self, api_key: str, base_url: str, client: httpx.Client | None = None) -> None:
         if not api_key:
@@ -57,6 +61,26 @@ class FredProvider(EconomicDataProvider):
         )
 
     def fetch_observations(self, series_code: str) -> list[ObservationDTO]:
+        try:
+            return self._fetch_observations_full_vintage_history(series_code)
+        except FredProviderTooManyVintagesError:
+            # High-frequency series with little/no revision history (e.g.
+            # daily market rates like DGS10) can have thousands of distinct
+            # "vintage" dates purely from new values being added daily, even
+            # though past values are essentially never revised. FRED caps
+            # how many vintages a single request can return. Falling back to
+            # the default (current) real-time period is a reasonable, honest
+            # trade-off for this kind of series specifically — see AGENTS.md
+            # section 4 on point-in-time data for why this matters more for
+            # revised series (CPI, UNRATE) than for rarely-revised ones.
+            log.warning(
+                "fred_falling_back_to_current_vintage_only",
+                series_code=series_code,
+                reason="too_many_vintage_dates_in_full_history_request",
+            )
+            return self._fetch_observations_current_vintage_only(series_code)
+
+    def _fetch_observations_full_vintage_history(self, series_code: str) -> list[ObservationDTO]:
         response = self._client.get(
             f"{self._base_url}/series/observations",
             params={
@@ -78,7 +102,23 @@ class FredProvider(EconomicDataProvider):
                 "realtime_end": _FRED_MAX_DATE,
             },
         )
+        if self._is_too_many_vintages_error(response):
+            raise FredProviderTooManyVintagesError(response.text)
         self._raise_for_fred_error(response)
+        return self._parse_observations(series_code, response)
+
+    def _fetch_observations_current_vintage_only(self, series_code: str) -> list[ObservationDTO]:
+        """No realtime_start/realtime_end: FRED defaults to today's known values only."""
+        response = self._client.get(
+            f"{self._base_url}/series/observations",
+            params={"series_id": series_code, "api_key": self._api_key, "file_type": "json"},
+        )
+        self._raise_for_fred_error(response)
+        return self._parse_observations(series_code, response)
+
+    def _parse_observations(
+        self, series_code: str, response: httpx.Response
+    ) -> list[ObservationDTO]:
         payload = response.json()
         raw_observations = payload.get("observations") or []
 
@@ -111,6 +151,12 @@ class FredProvider(EconomicDataProvider):
             log.info("fred_observations_skipped_summary", series_code=series_code, skipped=skipped)
 
         return results
+
+    @staticmethod
+    def _is_too_many_vintages_error(response: httpx.Response) -> bool:
+        if response.status_code == httpx.codes.OK:
+            return False
+        return "exceeds the maximum number of vintage dates" in response.text
 
     @staticmethod
     def _raise_for_fred_error(response: httpx.Response) -> None:
