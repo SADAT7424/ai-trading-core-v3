@@ -9,6 +9,7 @@ from app.api.v1.endpoints import (
     opportunities,
     performance,
     positions,
+    research,
     risk,
     system,
 )
@@ -24,3 +25,4 @@ api_router.include_router(risk.router)
 api_router.include_router(execution.router)
 api_router.include_router(positions.router)
 api_router.include_router(performance.router)
+api_router.include_router(research.router)
