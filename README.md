@@ -101,18 +101,24 @@ ai-trading-core/
 
 ## Roadmap
 
-This repo currently implements **Stage 1 — Foundation** only. Next stages,
-in order, per the master plan:
+All 11 code stages are implemented and tested. Stage 12 is a decision
+process, not code — see `docs/STAGE_12_LIVE_PROGRESSION.md`.
 
-1. ~~Foundation~~ ← you are here
-2. Data Infrastructure (economic calendar, market data ingestion)
-3. GO OS — Macro Intelligence Engine
-4. Market Core
-5. Trading Core & Strategy Engine
-6. Risk Governance
-7. Execution Intelligence
-8. Position Management
-9. Research (backtesting, walk-forward, Monte Carlo)
-10. Memory
-11. Learning
-12. Paper → Shadow → Controlled Live → Production
+1. ✅ Foundation — repo, Docker, Postgres, Redis, CI
+2. ✅ Data Infrastructure — point-in-time economic (FRED) + price (Twelve Data) ingestion
+3. ✅ GO OS — Macro Intelligence Engine (real yield, inflation, policy, USD → gold score)
+4. ✅ Market Core (trend, momentum, volatility, RSI)
+5. ✅ Trading Core & Strategy Engine (trend-pullback + macro alignment)
+6. ✅ Risk Governance (position sizing, hard limits, kill switch, daily loss limit)
+7. ✅ Execution Intelligence (paper broker adapter — no real broker, ever, in this build)
+8. ✅ Position Management (thesis tracking, hard-stop-always-wins, trailing stops)
+9. ✅ Research (point-in-time, look-ahead-free backtesting)
+10. ✅ Memory (trade history insights, "similar setups" comparison)
+11. ✅ Learning (confidence calibration — are quality grades actually predictive?)
+12. 📋 Paper → Shadow → Controlled Live → Production — a real-world decision,
+    not a build stage; see `docs/STAGE_12_LIVE_PROGRESSION.md` for the
+    criteria to weigh before ever considering it.
+
+RAH OS currently trades **paper only** — there is no real broker adapter
+anywhere in this codebase, and adding one would be a distinct, deliberate,
+future decision (see Stage 12 doc).

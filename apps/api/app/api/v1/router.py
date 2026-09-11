@@ -3,9 +3,11 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     economic,
     execution,
+    learning,
     macro,
     market_data,
     market_state,
+    memory,
     opportunities,
     performance,
     positions,
@@ -26,3 +28,5 @@ api_router.include_router(execution.router)
 api_router.include_router(positions.router)
 api_router.include_router(performance.router)
 api_router.include_router(research.router)
+api_router.include_router(memory.router)
+api_router.include_router(learning.router)
