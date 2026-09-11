@@ -11,4 +11,4 @@ class Base(DeclarativeBase):
 
 
 # Import models so they are registered on Base.metadata for Alembic autogenerate.
-from app.models import system  # noqa: E402,F401
+from app.models import economic, system  # noqa: E402,F401

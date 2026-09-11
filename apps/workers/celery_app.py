@@ -16,7 +16,7 @@ celery_app = Celery(
     "go_os",
     broker=REDIS_URL,
     backend=REDIS_URL,
-    include=["tasks.example_task"],
+    include=["tasks.example_task", "tasks.economic_ingestion"],
 )
 
 celery_app.conf.update(
@@ -25,4 +25,12 @@ celery_app.conf.update(
     accept_content=["json"],
     timezone="UTC",
     enable_utc=True,
+    beat_schedule={
+        "ingest-economic-watchlist-daily": {
+            "task": "tasks.ingest_watchlist",
+            # Once a day is plenty for macro series that update
+            # monthly/quarterly — no point hammering FRED more often.
+            "schedule": 24 * 60 * 60.0,
+        },
+    },
 )

@@ -13,7 +13,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    app_name: str = "GO OS API"
+    app_name: str = "RAH OS API"
     environment: str = "development"  # development | testing | paper | shadow | production
     debug: bool = True
 
@@ -21,6 +21,12 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+psycopg2://go_os:go_os@localhost:5432/go_os"
     redis_url: str = "redis://localhost:6379/0"
+
+    # Stage 2 — Data Infrastructure. Free key from https://fred.stlouisfed.org/docs/api/api_key.html
+    # Left empty by default; ingestion endpoints/tasks will fail clearly (not
+    # silently) if this is missing and a real fetch is attempted.
+    fred_api_key: str = ""
+    fred_base_url: str = "https://api.stlouisfed.org/fred"
 
     cors_origins: list[str] = ["http://localhost:3000"]
 
