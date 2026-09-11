@@ -36,6 +36,7 @@ services:
       REDIS_URL: redis://redis:6379/0
       CORS_ORIGINS: '["http://localhost:3000"]'
       FRED_API_KEY: ${FRED_API_KEY:-}
+      TWELVE_DATA_API_KEY: ${TWELVE_DATA_API_KEY:-}
     ports:
       - "8000:8000"
     depends_on:

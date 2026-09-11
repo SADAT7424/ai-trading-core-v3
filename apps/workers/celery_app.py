@@ -16,7 +16,7 @@ celery_app = Celery(
     "go_os",
     broker=REDIS_URL,
     backend=REDIS_URL,
-    include=["tasks.example_task", "tasks.economic_ingestion"],
+    include=["tasks.example_task", "tasks.economic_ingestion", "tasks.market_ingestion"],
 )
 
 celery_app.conf.update(
@@ -30,6 +30,12 @@ celery_app.conf.update(
             "task": "tasks.ingest_watchlist",
             # Once a day is plenty for macro series that update
             # monthly/quarterly — no point hammering FRED more often.
+            "schedule": 24 * 60 * 60.0,
+        },
+        "ingest-market-watchlist-daily": {
+            "task": "tasks.ingest_market_watchlist",
+            # Daily bars only need a daily pull. Twelve Data's free tier has
+            # a real request quota — this schedule respects that on purpose.
             "schedule": 24 * 60 * 60.0,
         },
     },

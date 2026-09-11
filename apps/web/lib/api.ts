@@ -74,3 +74,25 @@ export function getReady(): Promise<ReadyResponse> {
 export function getMacroRegime(): Promise<MacroRegimeResponse> {
   return getJson<MacroRegimeResponse>("/api/v1/macro/regime");
 }
+
+export interface MarketStateResponse {
+  symbol: string;
+  interval: string;
+  as_of: string;
+  latest_close: number;
+  sma_fast: number;
+  sma_slow: number;
+  trend: "BULLISH" | "BEARISH" | "NEUTRAL";
+  roc_pct: number;
+  momentum: "POSITIVE" | "NEGATIVE" | "FLAT";
+  atr: number;
+  atr_pct_of_price: number;
+  volatility: "HIGH" | "NORMAL" | "LOW";
+  regime: "TRENDING" | "RANGING" | "HIGH_VOLATILITY";
+}
+
+export function getMarketState(symbol: string, interval = "1day"): Promise<MarketStateResponse> {
+  return getJson<MarketStateResponse>(
+    `/api/v1/market/state/${symbol}?interval=${interval}`
+  );
+}

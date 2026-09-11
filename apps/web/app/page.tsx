@@ -1,13 +1,16 @@
-import { getHealth, getMacroRegime, getReady } from "@/lib/api";
+import { getHealth, getMacroRegime, getMarketState, getReady } from "@/lib/api";
 import { MacroRegimeCard, MacroRegimeEmptyState } from "./MacroRegimeCard";
+import { MarketStateCard, MarketStateEmptyState } from "./MarketStateCard";
 import styles from "./page.module.css";
+
+const PRIMARY_SYMBOL = "XAUUSD";
 
 /**
  * Foundation-stage Command Center.
  *
- * Macro Regime is now live data (Stage 3). Active Opportunities, Portfolio
- * Risk, and Open Positions remain placeholders for later build stages — see
- * docs/RAH_OS_Master_Plan.docx section 15.5.
+ * Macro Regime (Stage 3) and Market Structure (Stage 4) are now live data.
+ * Portfolio Risk and Open Positions remain placeholders for later build
+ * stages — see docs/RAH_OS_Master_Plan.docx section 15.5.
  */
 export default async function Home() {
   let health: Awaited<ReturnType<typeof getHealth>> | null = null;
@@ -24,9 +27,14 @@ export default async function Home() {
   try {
     macroRegime = await getMacroRegime();
   } catch {
-    // Not yet ingested, or another transient issue — the empty state below
-    // handles this without treating it as a page-level error.
     macroRegime = null;
+  }
+
+  let marketState: Awaited<ReturnType<typeof getMarketState>> | null = null;
+  try {
+    marketState = await getMarketState(PRIMARY_SYMBOL);
+  } catch {
+    marketState = null;
   }
 
   return (
@@ -73,7 +81,13 @@ export default async function Home() {
           <MacroRegimeEmptyState />
         )}
 
-        {["Active Opportunities", "Portfolio Risk", "Open Positions"].map((title) => (
+        {marketState ? (
+          <MarketStateCard data={marketState} />
+        ) : (
+          <MarketStateEmptyState symbol={PRIMARY_SYMBOL} />
+        )}
+
+        {["Portfolio Risk", "Open Positions"].map((title) => (
           <div key={title} className={styles.placeholderCard}>
             <h3>{title}</h3>
             <p className={styles.muted}>Coming in a later build stage.</p>

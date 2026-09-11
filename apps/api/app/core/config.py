@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     fred_api_key: str = ""
     fred_base_url: str = "https://api.stlouisfed.org/fred"
 
+    # Stage 4 — Market Core. Free key from https://twelvedata.com/pricing
+    twelve_data_api_key: str = ""
+    twelve_data_base_url: str = "https://api.twelvedata.com"
+
     cors_origins: list[str] = ["http://localhost:3000"]
 
     log_level: str = "INFO"
