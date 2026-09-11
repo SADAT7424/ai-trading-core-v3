@@ -47,6 +47,12 @@ class RealYieldLevel(StrEnum):
     HIGH = "HIGH"  # historically bearish for gold
 
 
+class DollarCondition(StrEnum):
+    STRENGTHENING = "STRENGTHENING"  # historically bearish for gold
+    STABLE = "STABLE"
+    WEAKENING = "WEAKENING"  # historically bullish for gold
+
+
 class MacroRegime(StrEnum):
     REFLATION = "REFLATION"  # strong growth + high/rising inflation
     STAGFLATION = "STAGFLATION"  # weak growth + high/rising inflation
@@ -109,6 +115,14 @@ def classify_real_yield(real_yield_pct: float) -> RealYieldLevel:
     return RealYieldLevel.LOW
 
 
+def classify_dollar_condition(usd_trend: Trend) -> DollarCondition:
+    if usd_trend is Trend.RISING:
+        return DollarCondition.STRENGTHENING
+    if usd_trend is Trend.FALLING:
+        return DollarCondition.WEAKENING
+    return DollarCondition.STABLE
+
+
 def classify_macro_regime(
     inflation_level: InflationLevel,
     inflation_trend: Trend,
@@ -131,6 +145,7 @@ class GoldScoreBreakdown:
     real_yield_contribution: int
     inflation_contribution: int
     policy_contribution: int
+    usd_contribution: int
 
     @property
     def total(self) -> int:
@@ -138,6 +153,7 @@ class GoldScoreBreakdown:
             self.real_yield_contribution
             + self.inflation_contribution
             + self.policy_contribution
+            + self.usd_contribution
         )
 
     @property
@@ -153,12 +169,18 @@ def compute_gold_macro_score(
     real_yield_level: RealYieldLevel,
     inflation_level: InflationLevel,
     policy_stance: PolicyStance,
+    dollar_condition: DollarCondition,
 ) -> GoldScoreBreakdown:
     """
     A simplified, transparent version of the master plan's Asset Impact
     Engine (section 5.5) for gold specifically. Each factor contributes
     independently on a fixed scale so the reasoning stays auditable — this
     is deliberately not a black box.
+
+    USD is included because the master plan repeatedly identifies the
+    Gold<->USD relationship as gold's single most cited driver (section
+    5.10, 5.15) — leaving it out of the score while having the data
+    ingested would be a real gap, not a simplification.
     """
     real_yield_contribution = {
         RealYieldLevel.NEGATIVE: 35,
@@ -178,8 +200,15 @@ def compute_gold_macro_score(
         PolicyStance.HAWKISH: -25,
     }[policy_stance]
 
+    usd_contribution = {
+        DollarCondition.WEAKENING: 25,
+        DollarCondition.STABLE: 0,
+        DollarCondition.STRENGTHENING: -25,
+    }[dollar_condition]
+
     return GoldScoreBreakdown(
         real_yield_contribution=real_yield_contribution,
         inflation_contribution=inflation_contribution,
         policy_contribution=policy_contribution,
+        usd_contribution=usd_contribution,
     )

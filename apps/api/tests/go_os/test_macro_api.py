@@ -95,13 +95,31 @@ def _seed_bullish_scenario(db: Session, today: date) -> None:
             (today, 4.0),
         ],
     )
-    # 10Y yield well below trailing inflation => negative real yield.
+    # Negative real yield (TIPS), directly.
     _seed_series(
         db,
-        "DGS10",
+        "DFII10",
         [
-            (today - timedelta(days=30), 3.6),
-            (today, 3.5),
+            (today - timedelta(days=30), -0.3),
+            (today, -0.5),
+        ],
+    )
+    # Breakeven inflation expectations — informational only, not scored yet.
+    _seed_series(
+        db,
+        "T10YIE",
+        [
+            (today - timedelta(days=30), 2.3),
+            (today, 2.4),
+        ],
+    )
+    # USD weakening => bullish contribution.
+    _seed_series(
+        db,
+        "DTWEXBGS",
+        [
+            (today - timedelta(days=90), 122.0),
+            (today, 118.0),
         ],
     )
 
@@ -126,8 +144,9 @@ def test_macro_regime_bullish_gold_scenario(client: TestClient) -> None:
     assert body["employment_condition"] == "WEAKENING"
     assert body["policy_stance"] == "DOVISH"
     assert body["real_yield_level"] == "NEGATIVE"
+    assert body["usd_condition"] == "WEAKENING"
     assert body["regime"] == "STAGFLATION"  # high inflation + weakening employment
     assert body["gold_score"]["bias"] == "BULLISH"
-    # Negative real yields + high inflation + dovish policy all push the
-    # same direction, so the total should be strongly positive.
+    # Negative real yields + high inflation + dovish policy + weak USD all
+    # push the same direction, so the total should be strongly positive.
     assert body["gold_score"]["total"] > 0

@@ -1,0 +1,170 @@
+.card {
+  background: var(--panel-solid);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+.asOf {
+  margin: -0.75rem 0 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.regimeBadge,
+.biasBadge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+.regimeReflation {
+  background: rgba(59, 130, 246, 0.16);
+  color: #7db4ff;
+}
+.regimeGoldilocks {
+  background: rgba(34, 197, 94, 0.16);
+  color: var(--positive);
+}
+.regimeStagflation {
+  background: rgba(239, 68, 68, 0.16);
+  color: var(--negative);
+}
+.regimeDeflationary {
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--text-muted);
+}
+
+.biasBullish {
+  background: rgba(34, 197, 94, 0.16);
+  color: var(--positive);
+}
+.biasNeutral {
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--text-muted);
+}
+.biasBearish {
+  background: rgba(239, 68, 68, 0.16);
+  color: var(--negative);
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1.5rem;
+  margin: 0;
+}
+
+.statRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.statRow dt {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.statRow dd {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.tag {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: lowercase;
+}
+
+.tagMuted {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.goldSection {
+  border-top: 1px solid var(--border);
+  padding-top: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.contributions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.contributionRow {
+  display: grid;
+  grid-template-columns: 80px 1fr 44px;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.contributionLabel {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.barTrack {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.barFillPositive {
+  height: 100%;
+  background: var(--positive);
+  border-radius: 999px;
+}
+
+.barFillNegative {
+  height: 100%;
+  background: var(--negative);
+  border-radius: 999px;
+}
+
+.contributionValue {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.emptyState {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}

@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.go_os.macro.calculations import (
+    DollarCondition,
     EmploymentCondition,
     GoldBias,
     InflationLevel,
@@ -32,6 +33,7 @@ class GoldScoreResponse(BaseModel):
     real_yield_contribution: int
     inflation_contribution: int
     policy_contribution: int
+    usd_contribution: int
     total: int
     bias: GoldBias
 
@@ -49,9 +51,14 @@ class MacroRegimeResponse(BaseModel):
     fed_funds_rate_pct: float
     policy_stance: PolicyStance
 
-    real_yield_proxy_pct: float
+    real_yield_10y_pct: float
     real_yield_level: RealYieldLevel
-    real_yield_caveat: str
+
+    breakeven_inflation_10y_pct: float
+    breakeven_inflation_note: str
+
+    usd_index_level: float
+    usd_condition: DollarCondition
 
     regime: MacroRegime
     gold_score: GoldScoreResponse
@@ -75,14 +82,18 @@ def get_macro_regime(db: Session = Depends(get_db)) -> MacroRegimeResponse:
         employment_condition=snapshot.employment_condition,
         fed_funds_rate_pct=snapshot.fed_funds_rate_pct,
         policy_stance=snapshot.policy_stance,
-        real_yield_proxy_pct=snapshot.real_yield_proxy_pct,
+        real_yield_10y_pct=snapshot.real_yield_10y_pct,
         real_yield_level=snapshot.real_yield_level,
-        real_yield_caveat=snapshot.real_yield_caveat,
+        breakeven_inflation_10y_pct=snapshot.breakeven_inflation_10y_pct,
+        breakeven_inflation_note=snapshot.breakeven_inflation_note,
+        usd_index_level=snapshot.usd_index_level,
+        usd_condition=snapshot.usd_condition,
         regime=snapshot.regime,
         gold_score=GoldScoreResponse(
             real_yield_contribution=snapshot.gold_score.real_yield_contribution,
             inflation_contribution=snapshot.gold_score.inflation_contribution,
             policy_contribution=snapshot.gold_score.policy_contribution,
+            usd_contribution=snapshot.gold_score.usd_contribution,
             total=snapshot.gold_score.total,
             bias=snapshot.gold_score.bias,
         ),

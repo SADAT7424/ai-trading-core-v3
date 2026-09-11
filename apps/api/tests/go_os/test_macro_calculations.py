@@ -3,6 +3,7 @@ Unit tests for the Macro Regime Engine's pure calculations. No database, no
 network — these test the classification rules directly.
 """
 from app.go_os.macro.calculations import (
+    DollarCondition,
     EmploymentCondition,
     GoldBias,
     InflationLevel,
@@ -10,6 +11,7 @@ from app.go_os.macro.calculations import (
     PolicyStance,
     RealYieldLevel,
     Trend,
+    classify_dollar_condition,
     classify_employment_condition,
     classify_inflation_level,
     classify_macro_regime,
@@ -53,6 +55,12 @@ def test_classify_real_yield() -> None:
     assert classify_real_yield(-1.0) is RealYieldLevel.NEGATIVE
 
 
+def test_classify_dollar_condition() -> None:
+    assert classify_dollar_condition(Trend.RISING) is DollarCondition.STRENGTHENING
+    assert classify_dollar_condition(Trend.FALLING) is DollarCondition.WEAKENING
+    assert classify_dollar_condition(Trend.FLAT) is DollarCondition.STABLE
+
+
 def test_classify_macro_regime_reflation() -> None:
     regime = classify_macro_regime(
         InflationLevel.HIGH, Trend.RISING, EmploymentCondition.STRENGTHENING
@@ -82,25 +90,28 @@ def test_classify_macro_regime_deflationary() -> None:
 
 
 def test_gold_score_strongly_bullish_scenario() -> None:
-    """Negative real yields + high inflation + dovish Fed => bullish for gold."""
+    """Negative real yields + high inflation + dovish Fed + weak USD => bullish for gold."""
     score = compute_gold_macro_score(
-        RealYieldLevel.NEGATIVE, InflationLevel.HIGH, PolicyStance.DOVISH
+        RealYieldLevel.NEGATIVE, InflationLevel.HIGH, PolicyStance.DOVISH, DollarCondition.WEAKENING
     )
-    assert score.total == 35 + 25 + 25
+    assert score.total == 35 + 25 + 25 + 25
     assert score.bias is GoldBias.BULLISH
 
 
 def test_gold_score_strongly_bearish_scenario() -> None:
-    """High real yields + low inflation + hawkish Fed => bearish for gold."""
+    """High real yields + low inflation + hawkish Fed + strong USD => bearish for gold."""
     score = compute_gold_macro_score(
-        RealYieldLevel.HIGH, InflationLevel.LOW, PolicyStance.HAWKISH
+        RealYieldLevel.HIGH,
+        InflationLevel.LOW,
+        PolicyStance.HAWKISH,
+        DollarCondition.STRENGTHENING,
     )
-    assert score.total == -35 - 10 - 25
+    assert score.total == -35 - 10 - 25 - 25
     assert score.bias is GoldBias.BEARISH
 
 
 def test_gold_score_neutral_scenario() -> None:
     score = compute_gold_macro_score(
-        RealYieldLevel.LOW, InflationLevel.MODERATE, PolicyStance.NEUTRAL
+        RealYieldLevel.LOW, InflationLevel.MODERATE, PolicyStance.NEUTRAL, DollarCondition.STABLE
     )
     assert score.bias is GoldBias.NEUTRAL

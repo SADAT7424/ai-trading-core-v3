@@ -1,13 +1,13 @@
-import { getHealth, getReady } from "@/lib/api";
+import { getHealth, getMacroRegime, getReady } from "@/lib/api";
+import { MacroRegimeCard, MacroRegimeEmptyState } from "./MacroRegimeCard";
 import styles from "./page.module.css";
 
 /**
- * Foundation-stage Command Center placeholder.
+ * Foundation-stage Command Center.
  *
- * This proves the web app can reach the API and lays out where the real
- * dashboard sections (Macro Regime, Active Opportunities, Portfolio Risk,
- * Open Positions — see docs/GO_OS_Master_Plan.docx section 15.5) will go.
- * No trading data exists yet.
+ * Macro Regime is now live data (Stage 3). Active Opportunities, Portfolio
+ * Risk, and Open Positions remain placeholders for later build stages — see
+ * docs/RAH_OS_Master_Plan.docx section 15.5.
  */
 export default async function Home() {
   let health: Awaited<ReturnType<typeof getHealth>> | null = null;
@@ -18,6 +18,15 @@ export default async function Home() {
     [health, ready] = await Promise.all([getHealth(), getReady()]);
   } catch (err) {
     apiError = err instanceof Error ? err.message : "Unknown error reaching the API";
+  }
+
+  let macroRegime: Awaited<ReturnType<typeof getMacroRegime>> | null = null;
+  try {
+    macroRegime = await getMacroRegime();
+  } catch {
+    // Not yet ingested, or another transient issue — the empty state below
+    // handles this without treating it as a page-level error.
+    macroRegime = null;
   }
 
   return (
@@ -58,12 +67,13 @@ export default async function Home() {
       </section>
 
       <section className={styles.placeholderGrid}>
-        {[
-          "Macro Regime (RAH OS)",
-          "Active Opportunities",
-          "Portfolio Risk",
-          "Open Positions",
-        ].map((title) => (
+        {macroRegime ? (
+          <MacroRegimeCard data={macroRegime} />
+        ) : (
+          <MacroRegimeEmptyState />
+        )}
+
+        {["Active Opportunities", "Portfolio Risk", "Open Positions"].map((title) => (
           <div key={title} className={styles.placeholderCard}>
             <h3>{title}</h3>
             <p className={styles.muted}>Coming in a later build stage.</p>

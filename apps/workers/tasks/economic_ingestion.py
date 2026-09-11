@@ -20,7 +20,10 @@ WATCHLIST = [
     "CPIAUCSL",  # CPI (headline)
     "UNRATE",  # Unemployment rate
     "FEDFUNDS",  # Effective federal funds rate
-    "DGS10",  # 10-Year Treasury yield
+    "DGS10",  # 10-Year Treasury yield (nominal)
+    "DFII10",  # 10-Year TIPS yield -> the REAL yield, market-priced
+    "T10YIE",  # 10-Year breakeven inflation expectations
+    "DTWEXBGS",  # Trade-weighted broad USD index
 ]
 
 

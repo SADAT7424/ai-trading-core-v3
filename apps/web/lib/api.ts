@@ -27,6 +27,34 @@ export interface ReadyResponse {
   };
 }
 
+export interface GoldScore {
+  real_yield_contribution: number;
+  inflation_contribution: number;
+  policy_contribution: number;
+  usd_contribution: number;
+  total: number;
+  bias: "BULLISH" | "NEUTRAL" | "BEARISH";
+}
+
+export interface MacroRegimeResponse {
+  as_of: string;
+  inflation_yoy_pct: number;
+  inflation_level: "LOW" | "MODERATE" | "HIGH";
+  inflation_trend: "RISING" | "FALLING" | "FLAT";
+  unemployment_rate_pct: number;
+  employment_condition: "STRENGTHENING" | "STABLE" | "WEAKENING";
+  fed_funds_rate_pct: number;
+  policy_stance: "DOVISH" | "NEUTRAL" | "HAWKISH";
+  real_yield_10y_pct: number;
+  real_yield_level: "NEGATIVE" | "LOW" | "HIGH";
+  breakeven_inflation_10y_pct: number;
+  breakeven_inflation_note: string;
+  usd_index_level: number;
+  usd_condition: "STRENGTHENING" | "STABLE" | "WEAKENING";
+  regime: "REFLATION" | "STAGFLATION" | "GOLDILOCKS" | "DEFLATIONARY";
+  gold_score: GoldScore;
+}
+
 async function getJson<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store" });
   if (!res.ok) {
@@ -41,4 +69,8 @@ export function getHealth(): Promise<HealthResponse> {
 
 export function getReady(): Promise<ReadyResponse> {
   return getJson<ReadyResponse>("/api/v1/system/ready");
+}
+
+export function getMacroRegime(): Promise<MacroRegimeResponse> {
+  return getJson<MacroRegimeResponse>("/api/v1/macro/regime");
 }
