@@ -1,7 +1,15 @@
-import { getHealth, getMacroRegime, getMarketState, getOpportunity, getReady } from "@/lib/api";
+import {
+  evaluateTrade,
+  getHealth,
+  getMacroRegime,
+  getMarketState,
+  getOpportunity,
+  getReady,
+} from "@/lib/api";
 import { MacroRegimeCard, MacroRegimeEmptyState } from "./MacroRegimeCard";
 import { MarketStateCard, MarketStateEmptyState } from "./MarketStateCard";
 import { OpportunityCard, OpportunityEmptyState } from "./OpportunityCard";
+import { RiskCard, RiskCardEmptyState } from "./RiskCard";
 import styles from "./page.module.css";
 
 const PRIMARY_SYMBOL = "XAUUSD";
@@ -9,9 +17,9 @@ const PRIMARY_SYMBOL = "XAUUSD";
 /**
  * Foundation-stage Command Center.
  *
- * Macro Regime (Stage 3), Market Structure (Stage 4), and Active
- * Opportunity (Stage 5) are now live data. Portfolio Risk and Open
- * Positions remain placeholders for later build stages — see
+ * Macro Regime (Stage 3), Market Structure (Stage 4), Active Opportunity
+ * (Stage 5), and Risk Check (Stage 6) are now live data. Open Positions
+ * remains a placeholder for Stage 8 — see
  * docs/RAH_OS_Master_Plan.docx section 15.5.
  */
 export default async function Home() {
@@ -44,6 +52,13 @@ export default async function Home() {
     opportunity = await getOpportunity(PRIMARY_SYMBOL);
   } catch {
     opportunity = null;
+  }
+
+  let riskEvaluation: Awaited<ReturnType<typeof evaluateTrade>> | null = null;
+  try {
+    riskEvaluation = await evaluateTrade(PRIMARY_SYMBOL);
+  } catch {
+    riskEvaluation = null;
   }
 
   return (
@@ -101,6 +116,8 @@ export default async function Home() {
         ) : (
           <OpportunityEmptyState symbol={PRIMARY_SYMBOL} />
         )}
+
+        {riskEvaluation ? <RiskCard data={riskEvaluation} /> : <RiskCardEmptyState />}
 
         <div className={styles.placeholderCard}>
           <h3>Open Positions</h3>

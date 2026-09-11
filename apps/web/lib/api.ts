@@ -125,3 +125,35 @@ export interface OpportunityResponse {
 export function getOpportunity(symbol: string, interval = "1day"): Promise<OpportunityResponse> {
   return getJson<OpportunityResponse>(`/api/v1/opportunities/${symbol}?interval=${interval}`);
 }
+
+export interface TradeEvaluationResponse {
+  symbol: string;
+  direction: "LONG" | "SHORT" | "NONE";
+  entry_price: number;
+  stop_price: number | null;
+  quality: "A" | "B" | "C" | "D" | null;
+  kill_switch_state: "NORMAL" | "ALERT" | "SAFE_MODE" | "EMERGENCY_STOP";
+  approved: boolean;
+  reasons: string[];
+  notes: string[];
+  position: {
+    risk_pct: number;
+    risk_amount: number;
+    units: number;
+    exposure_pct: number;
+  } | null;
+}
+
+async function postJson<T>(path: string): Promise<T> {
+  const res = await fetch(`${API_BASE_URL}${path}`, { method: "POST", cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Request to ${path} failed with status ${res.status}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+export function evaluateTrade(symbol: string, interval = "1day"): Promise<TradeEvaluationResponse> {
+  return postJson<TradeEvaluationResponse>(
+    `/api/v1/risk/evaluate-trade/${symbol}?interval=${interval}`
+  );
+}
