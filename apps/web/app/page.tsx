@@ -23,7 +23,7 @@ export default async function Home() {
   return (
     <main className={styles.main}>
       <header className={styles.header}>
-        <h1 className={styles.logo}>GO OS</h1>
+        <h1 className={styles.logo}>RAH OS</h1>
         <span className={styles.badge}>BUILD 01 — FOUNDATION</span>
       </header>
 
@@ -59,7 +59,7 @@ export default async function Home() {
 
       <section className={styles.placeholderGrid}>
         {[
-          "Macro Regime (GO OS)",
+          "Macro Regime (RAH OS)",
           "Active Opportunities",
           "Portfolio Risk",
           "Open Positions",

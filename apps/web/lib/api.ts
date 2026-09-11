@@ -1,8 +1,17 @@
 /**
  * Thin API client. The web app has no business logic of its own — it only
  * calls the FastAPI backend. See AGENTS.md: "web — thin client".
+ *
+ * Two different URLs are needed:
+ * - INTERNAL_API_URL: used when this code runs on the server (inside the
+ *   Docker network), where the API is reachable at http://api:8000.
+ * - NEXT_PUBLIC_API_URL: used if this code ever runs in the browser, where
+ *   the API must be reached via its public/forwarded URL instead.
  */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const API_BASE_URL =
+  process.env.INTERNAL_API_URL ??
+  process.env.NEXT_PUBLIC_API_URL ??
+  "http://localhost:8000";
 
 export interface HealthResponse {
   status: string;

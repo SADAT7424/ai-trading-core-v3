@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GO OS",
+  title: "RAH OS",
   description: "AI Trading Core — Foundation build",
 };
 

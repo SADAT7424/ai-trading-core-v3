@@ -65,6 +65,11 @@ services:
       context: ./apps/web
     restart: unless-stopped
     environment:
+      # Server-side code (inside this container) reaches the API via the
+      # Docker network using the service name "api" — never "localhost".
+      INTERNAL_API_URL: http://api:8000
+      # Reserved for future browser-side calls, which would need the
+      # public/forwarded URL instead of the internal one.
       NEXT_PUBLIC_API_URL: http://localhost:8000
     ports:
       - "3000:3000"
