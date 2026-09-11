@@ -96,3 +96,32 @@ export function getMarketState(symbol: string, interval = "1day"): Promise<Marke
     `/api/v1/market/state/${symbol}?interval=${interval}`
   );
 }
+
+export interface OpportunityResponse {
+  symbol: string;
+  interval: string;
+  as_of: string;
+  latest_close: number;
+  setup: {
+    direction: "LONG" | "SHORT" | "NONE";
+    distance_to_fast_sma_pct: number;
+    technical_score: number;
+  };
+  classification:
+    | "MACRO_ALIGNED_LONG"
+    | "MACRO_ALIGNED_SHORT"
+    | "COUNTER_MACRO_LONG"
+    | "COUNTER_MACRO_SHORT"
+    | "MACRO_NEUTRAL";
+  gold_macro_score: number;
+  score: {
+    technical_score: number;
+    macro_alignment_score: number;
+    overall_score: number;
+    quality: "A" | "B" | "C" | "D";
+  } | null;
+}
+
+export function getOpportunity(symbol: string, interval = "1day"): Promise<OpportunityResponse> {
+  return getJson<OpportunityResponse>(`/api/v1/opportunities/${symbol}?interval=${interval}`);
+}

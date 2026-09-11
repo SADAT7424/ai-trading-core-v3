@@ -1,6 +1,7 @@
-import { getHealth, getMacroRegime, getMarketState, getReady } from "@/lib/api";
+import { getHealth, getMacroRegime, getMarketState, getOpportunity, getReady } from "@/lib/api";
 import { MacroRegimeCard, MacroRegimeEmptyState } from "./MacroRegimeCard";
 import { MarketStateCard, MarketStateEmptyState } from "./MarketStateCard";
+import { OpportunityCard, OpportunityEmptyState } from "./OpportunityCard";
 import styles from "./page.module.css";
 
 const PRIMARY_SYMBOL = "XAUUSD";
@@ -8,9 +9,10 @@ const PRIMARY_SYMBOL = "XAUUSD";
 /**
  * Foundation-stage Command Center.
  *
- * Macro Regime (Stage 3) and Market Structure (Stage 4) are now live data.
- * Portfolio Risk and Open Positions remain placeholders for later build
- * stages — see docs/RAH_OS_Master_Plan.docx section 15.5.
+ * Macro Regime (Stage 3), Market Structure (Stage 4), and Active
+ * Opportunity (Stage 5) are now live data. Portfolio Risk and Open
+ * Positions remain placeholders for later build stages — see
+ * docs/RAH_OS_Master_Plan.docx section 15.5.
  */
 export default async function Home() {
   let health: Awaited<ReturnType<typeof getHealth>> | null = null;
@@ -35,6 +37,13 @@ export default async function Home() {
     marketState = await getMarketState(PRIMARY_SYMBOL);
   } catch {
     marketState = null;
+  }
+
+  let opportunity: Awaited<ReturnType<typeof getOpportunity>> | null = null;
+  try {
+    opportunity = await getOpportunity(PRIMARY_SYMBOL);
+  } catch {
+    opportunity = null;
   }
 
   return (
@@ -87,12 +96,16 @@ export default async function Home() {
           <MarketStateEmptyState symbol={PRIMARY_SYMBOL} />
         )}
 
-        {["Portfolio Risk", "Open Positions"].map((title) => (
-          <div key={title} className={styles.placeholderCard}>
-            <h3>{title}</h3>
-            <p className={styles.muted}>Coming in a later build stage.</p>
-          </div>
-        ))}
+        {opportunity ? (
+          <OpportunityCard data={opportunity} />
+        ) : (
+          <OpportunityEmptyState symbol={PRIMARY_SYMBOL} />
+        )}
+
+        <div className={styles.placeholderCard}>
+          <h3>Open Positions</h3>
+          <p className={styles.muted}>Coming in a later build stage.</p>
+        </div>
       </section>
     </main>
   );
