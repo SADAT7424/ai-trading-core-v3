@@ -31,6 +31,12 @@ const VOLATILITY_CLASS: Record<MarketStateResponse["volatility"], string> = {
   LOW: styles.tagMuted!,
 };
 
+const RSI_CLASS: Record<MarketStateResponse["rsi_condition"], string> = {
+  OVERBOUGHT: styles.tagNegative!,
+  OVERSOLD: styles.tagPositive!,
+  NEUTRAL: styles.tagMuted!,
+};
+
 export function MarketStateCard({ data }: { data: MarketStateResponse }) {
   const asOfLabel = new Date(data.as_of).toLocaleDateString("en-US", {
     year: "numeric",
@@ -81,6 +87,15 @@ export function MarketStateCard({ data }: { data: MarketStateResponse }) {
             {data.atr_pct_of_price}% of price{" "}
             <span className={`${styles.tag} ${VOLATILITY_CLASS[data.volatility]}`}>
               {data.volatility.toLowerCase()}
+            </span>
+          </dd>
+        </div>
+        <div className={styles.statRow}>
+          <dt>RSI (14)</dt>
+          <dd>
+            {data.rsi.toFixed(1)}{" "}
+            <span className={`${styles.tag} ${RSI_CLASS[data.rsi_condition]}`}>
+              {data.rsi_condition.toLowerCase()}
             </span>
           </dd>
         </div>

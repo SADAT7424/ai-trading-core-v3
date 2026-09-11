@@ -56,11 +56,32 @@ export interface MacroRegimeResponse {
 }
 
 async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store" });
-  if (!res.ok) {
-    throw new Error(`Request to ${path} failed with status ${res.status}`);
+  return fetchWithRetry(async () => {
+    const res = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store" });
+    if (!res.ok) {
+      throw new Error(`Request to ${path} failed with status ${res.status}`);
+    }
+    return res.json() as Promise<T>;
+  });
+}
+
+/**
+ * Retries once after a short delay, but ONLY for network-level failures
+ * (e.g. "fetch failed" — the API process not accepting connections yet,
+ * which happens for a few seconds right after `docker compose up`). A
+ * normal HTTP error response (400, 404, etc.) is a real answer from a
+ * running API and is never retried — retrying those would just mask
+ * genuine errors instead of fixing a timing issue.
+ */
+async function fetchWithRetry<T>(attempt: () => Promise<T>): Promise<T> {
+  try {
+    return await attempt();
+  } catch (err) {
+    const isNetworkError = err instanceof TypeError || /fetch failed/i.test(String(err));
+    if (!isNetworkError) throw err;
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    return attempt();
   }
-  return res.json() as Promise<T>;
 }
 
 export function getHealth(): Promise<HealthResponse> {
@@ -88,6 +109,8 @@ export interface MarketStateResponse {
   atr: number;
   atr_pct_of_price: number;
   volatility: "HIGH" | "NORMAL" | "LOW";
+  rsi: number;
+  rsi_condition: "OVERBOUGHT" | "OVERSOLD" | "NEUTRAL";
   regime: "TRENDING" | "RANGING" | "HIGH_VOLATILITY";
 }
 
@@ -153,8 +176,14 @@ async function postJson<T>(path: string): Promise<T> {
 }
 
 export function evaluateTrade(symbol: string, interval = "1day"): Promise<TradeEvaluationResponse> {
-  return postJson<TradeEvaluationResponse>(
-    `/api/v1/risk/evaluate-trade/${symbol}?interval=${interval}`
+  // Safe to retry on a network-level failure: this only computes and
+  // returns a decision, it never writes anything. Unlike monitorPosition
+  // below (which can close a trade), a retried duplicate call here is
+  // harmless — it would just recompute the identical answer.
+  return fetchWithRetry(() =>
+    postJson<TradeEvaluationResponse>(
+      `/api/v1/risk/evaluate-trade/${symbol}?interval=${interval}`
+    )
   );
 }
 
@@ -222,4 +251,21 @@ export function getOpenPositions(symbol?: string): Promise<PositionResponse[]> {
 
 export function monitorPosition(positionId: string): Promise<MonitorResponse> {
   return postJson<MonitorResponse>(`/api/v1/positions/${positionId}/monitor`);
+}
+
+export interface PerformanceSummaryResponse {
+  total_trades: number;
+  wins: number;
+  losses: number;
+  win_rate_pct: number;
+  total_realized_pnl: number;
+  average_win: number;
+  average_loss: number;
+  profit_factor: number | null;
+  expectancy: number;
+}
+
+export function getPerformanceSummary(symbol?: string): Promise<PerformanceSummaryResponse> {
+  const params = symbol ? `?symbol=${symbol}` : "";
+  return getJson<PerformanceSummaryResponse>(`/api/v1/performance/summary${params}`);
 }

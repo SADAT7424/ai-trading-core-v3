@@ -6,14 +6,17 @@ from app.market_core.calculations import (
     Bar,
     MarketRegime,
     Momentum,
+    RsiCondition,
     Trend,
     VolatilityLevel,
     average_true_range,
     classify_momentum,
     classify_regime,
+    classify_rsi,
     classify_trend,
     classify_volatility,
     rate_of_change,
+    relative_strength_index,
     simple_moving_average,
     true_range,
 )
@@ -56,6 +59,28 @@ def test_classify_volatility() -> None:
     assert classify_volatility(2.0) is VolatilityLevel.HIGH
     assert classify_volatility(0.2) is VolatilityLevel.LOW
     assert classify_volatility(0.8) is VolatilityLevel.NORMAL
+
+
+def test_classify_rsi() -> None:
+    assert classify_rsi(75) is RsiCondition.OVERBOUGHT
+    assert classify_rsi(25) is RsiCondition.OVERSOLD
+    assert classify_rsi(50) is RsiCondition.NEUTRAL
+    assert classify_rsi(70) is RsiCondition.OVERBOUGHT  # boundary
+    assert classify_rsi(30) is RsiCondition.OVERSOLD  # boundary
+
+
+def test_rsi_all_gains_is_100() -> None:
+    closes = [100 + i for i in range(20)]
+    assert relative_strength_index(closes, 14) == 100.0
+
+
+def test_rsi_all_losses_is_0() -> None:
+    closes = [100 - i for i in range(20)]
+    assert relative_strength_index(closes, 14) == 0.0
+
+
+def test_rsi_insufficient_data_returns_none() -> None:
+    assert relative_strength_index([100, 101, 102], 14) is None
 
 
 def test_classify_regime_high_volatility_dominates() -> None:

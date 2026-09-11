@@ -6,12 +6,14 @@ import {
   getOpenPositions,
   getOpportunity,
   getOrders,
+  getPerformanceSummary,
   getReady,
 } from "@/lib/api";
 import { MacroRegimeCard, MacroRegimeEmptyState } from "./MacroRegimeCard";
 import { MarketStateCard, MarketStateEmptyState } from "./MarketStateCard";
 import { OpportunityCard, OpportunityEmptyState } from "./OpportunityCard";
 import { OrdersCard } from "./OrdersCard";
+import { PerformanceCard } from "./PerformanceCard";
 import { PositionsCard } from "./PositionsCard";
 import { RiskCard, RiskCardEmptyState } from "./RiskCard";
 import styles from "./page.module.css";
@@ -79,6 +81,13 @@ export default async function Home() {
     openPositions = [];
   }
 
+  let performance: Awaited<ReturnType<typeof getPerformanceSummary>> | null = null;
+  try {
+    performance = await getPerformanceSummary(PRIMARY_SYMBOL);
+  } catch {
+    performance = null;
+  }
+
   return (
     <main className={styles.main}>
       <header className={styles.header}>
@@ -140,6 +149,8 @@ export default async function Home() {
         <OrdersCard orders={orders} />
 
         <PositionsCard positions={openPositions} />
+
+        {performance && <PerformanceCard data={performance} />}
       </section>
     </main>
   );

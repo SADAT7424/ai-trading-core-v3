@@ -7,6 +7,7 @@ from app.api.v1.endpoints import (
     market_data,
     market_state,
     opportunities,
+    performance,
     positions,
     risk,
     system,
@@ -22,3 +23,4 @@ api_router.include_router(opportunities.router)
 api_router.include_router(risk.router)
 api_router.include_router(execution.router)
 api_router.include_router(positions.router)
+api_router.include_router(performance.router)
