@@ -157,3 +157,28 @@ export function evaluateTrade(symbol: string, interval = "1day"): Promise<TradeE
     `/api/v1/risk/evaluate-trade/${symbol}?interval=${interval}`
   );
 }
+
+export interface OrderResponse {
+  id: string;
+  symbol: string;
+  direction: string;
+  status: "REJECTED" | "FILLED" | "CANCELLED";
+  broker: string;
+  requested_price: number;
+  filled_price: number | null;
+  stop_price: number;
+  units: number;
+  risk_amount: number;
+  risk_pct: number;
+  quality_grade: string | null;
+  classification: string | null;
+  rejection_reasons: string | null;
+  created_at: string;
+  filled_at: string | null;
+}
+
+export function getOrders(symbol?: string, limit = 10): Promise<OrderResponse[]> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (symbol) params.set("symbol", symbol);
+  return getJson<OrderResponse[]>(`/api/v1/execution/orders?${params.toString()}`);
+}

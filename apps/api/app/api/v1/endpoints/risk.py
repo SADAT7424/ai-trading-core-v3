@@ -111,6 +111,7 @@ class TradeEvaluationResponse(BaseModel):
     entry_price: float
     stop_price: float | None
     quality: QualityGrade | None
+    classification: str | None
     kill_switch_state: KillSwitchStateName
     approved: bool
     reasons: list[RejectionReason]
@@ -145,6 +146,7 @@ def evaluate_trade(
         entry_price=evaluation.entry_price,
         stop_price=evaluation.stop_price,
         quality=evaluation.quality,
+        classification=evaluation.classification,
         kill_switch_state=evaluation.kill_switch_state,
         approved=evaluation.decision.approved,
         reasons=evaluation.decision.reasons,

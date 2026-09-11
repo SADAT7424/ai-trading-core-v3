@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
     economic,
+    execution,
     macro,
     market_data,
     market_state,
@@ -18,3 +19,4 @@ api_router.include_router(market_data.router)
 api_router.include_router(market_state.router)
 api_router.include_router(opportunities.router)
 api_router.include_router(risk.router)
+api_router.include_router(execution.router)

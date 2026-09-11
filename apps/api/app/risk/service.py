@@ -29,6 +29,7 @@ class TradeEvaluation:
     entry_price: float
     stop_price: float | None
     quality: QualityGrade | None
+    classification: str | None
     kill_switch_state: KillSwitchStateName
     decision: RiskDecision
 
@@ -63,6 +64,7 @@ def evaluate_trade_for_symbol(
             entry_price=opportunity.latest_close,
             stop_price=None,
             quality=None,
+            classification=opportunity.classification.value,
             kill_switch_state=kill_switch_state,
             decision=RiskDecision(approved=False, reasons=[], notes=["No setup to evaluate."]),
         )
@@ -96,6 +98,7 @@ def evaluate_trade_for_symbol(
         entry_price=entry_price,
         stop_price=round(stop_price, 4),
         quality=opportunity.score.quality,
+        classification=opportunity.classification.value,
         kill_switch_state=kill_switch_state,
         decision=decision,
     )

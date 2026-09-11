@@ -4,11 +4,13 @@ import {
   getMacroRegime,
   getMarketState,
   getOpportunity,
+  getOrders,
   getReady,
 } from "@/lib/api";
 import { MacroRegimeCard, MacroRegimeEmptyState } from "./MacroRegimeCard";
 import { MarketStateCard, MarketStateEmptyState } from "./MarketStateCard";
 import { OpportunityCard, OpportunityEmptyState } from "./OpportunityCard";
+import { OrdersCard } from "./OrdersCard";
 import { RiskCard, RiskCardEmptyState } from "./RiskCard";
 import styles from "./page.module.css";
 
@@ -59,6 +61,13 @@ export default async function Home() {
     riskEvaluation = await evaluateTrade(PRIMARY_SYMBOL);
   } catch {
     riskEvaluation = null;
+  }
+
+  let orders: Awaited<ReturnType<typeof getOrders>> = [];
+  try {
+    orders = await getOrders(PRIMARY_SYMBOL);
+  } catch {
+    orders = [];
   }
 
   return (
@@ -118,6 +127,8 @@ export default async function Home() {
         )}
 
         {riskEvaluation ? <RiskCard data={riskEvaluation} /> : <RiskCardEmptyState />}
+
+        <OrdersCard orders={orders} />
 
         <div className={styles.placeholderCard}>
           <h3>Open Positions</h3>
